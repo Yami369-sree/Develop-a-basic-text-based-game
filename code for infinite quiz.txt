@@ -1,0 +1,114 @@
+"""
+Infinite online quiz using Open Trivia DB (https://opentdb.com/)
+Run: pip install requests
+Then: python infinite_quiz.py
+"""
+
+import requests
+import html
+import sys
+
+API_URL = "https://opentdb.com/api.php"  # Open Trivia DB endpoint
+
+def fetch_question(amount=1, category=None, difficulty=None, qtype="multiple"):
+    """
+    Fetch trivia question(s).
+    amount: number of questions (1)
+    category: numeric category id or None
+    difficulty: "easy", "medium", "hard" or None
+    qtype: "multiple" or "boolean"
+    """
+    params = {"amount": amount, "type": qtype}
+    if category:
+        params["category"] = category
+    if difficulty:
+        params["difficulty"] = difficulty
+
+    try:
+        r = requests.get(API_URL, params=params, timeout=8)
+        r.raise_for_status()
+        data = r.json()
+        if data.get("response_code") != 0 or not data.get("results"):
+            return None
+        return data["results"][0]
+    except Exception as e:
+        print("Error fetching question:", e)
+        return None
+
+def present_question(qdata):
+    """
+    Presents a question dict from OpenTDB and returns True/False if user answered correctly.
+    """
+    q_text = html.unescape(qdata["question"])
+    correct = html.unescape(qdata["correct_answer"])
+    incorrect = [html.unescape(i) for i in qdata["incorrect_answers"]]
+
+    options = incorrect + [correct]
+    # shuffle options but keep track of correct index
+    import random
+    random.shuffle(options)
+    correct_index = options.index(correct)
+
+    print("\nQuestion:")
+    print(q_text)
+    for i, opt in enumerate(options, start=1):
+        print(f"  {i}) {opt}")
+
+    # user input loop
+    while True:
+        ans = input("Enter option number (or type 'quit' to exit): ").strip().lower()
+        if ans == "quit":
+            return None  # signal to quit
+        if not ans.isdigit():
+            print("Please enter a number.")
+            continue
+        pick = int(ans)
+        if pick < 1 or pick > len(options):
+            print("Option out of range.")
+            continue
+        return (pick - 1) == correct_index
+
+def main():
+    print("Infinite Quiz (Open Trivia DB). Type 'quit' to stop anytime.")
+    print("You can choose difficulty (easy/medium/hard) or press Enter for random.")
+    diff = input("Choose difficulty (easy/medium/hard) or press Enter: ").strip().lower()
+    if diff not in ("easy", "medium", "hard"):
+        diff = None
+
+    score = 0
+    total = 0
+
+    try:
+        while True:
+            q = fetch_question(amount=1, difficulty=diff, qtype="multiple")
+            if q is None:
+                print("No question received (API may be down). Retrying in 3s...")
+                import time; time.sleep(3)
+                continue
+
+            result = present_question(q)
+            if result is None:
+                # user typed 'quit'
+                break
+            total += 1
+            if result:
+                score += 1
+                print("✅ Correct!")
+            else:
+                print(f"❌ Wrong. Correct answer: {html.unescape(q['correct_answer'])}")
+            print(f"Score: {score}/{total}")
+
+            # small pause between questions
+            # Press Enter to continue or type 'quit' to stop
+            c = input("Press Enter for next question or type 'quit' to exit: ").strip().lower()
+            if c == "quit":
+                break
+
+    except KeyboardInterrupt:
+        print("\nInterrupted by user.")
+
+    print("\nFinal score:", score, "/", total)
+    print("Thanks for playing!")
+
+if __name__ == "__main__":
+    main()

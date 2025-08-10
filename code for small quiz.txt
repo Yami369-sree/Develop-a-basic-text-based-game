@@ -1,0 +1,58 @@
+print("🧠 Welcome to the Quiz Game!")
+print("Answer the questions by typing the correct option (A, B, C, or D).\n")
+
+score = 0  # Track the player's score
+
+# Question 1
+print("1) What is the capital of France?")
+print("A) Berlin")
+print("B) Madrid")
+print("C) Paris")
+print("D) Rome")
+answer = input("Your answer: ").strip().upper()
+
+if answer == "C":
+    print("✅ Correct!")
+    score += 1
+else:
+    print("❌ Wrong! The correct answer is C) Paris.")
+print()
+
+# Question 2
+print("2) Which planet is known as the Red Planet?")
+print("A) Earth")
+print("B) Mars")
+print("C) Jupiter")
+print("D) Venus")
+answer = input("Your answer: ").strip().upper()
+
+if answer == "B":
+    print("✅ Correct!")
+    score += 1
+else:
+    print("❌ Wrong! The correct answer is B) Mars.")
+print()
+
+# Question 3
+print("3) Who wrote 'Harry Potter'?")
+print("A) J.K. Rowling")
+print("B) William Shakespeare")
+print("C) Mark Twain")
+print("D) Charles Dickens")
+answer = input("Your answer: ").strip().upper()
+
+if answer == "A":
+    print("✅ Correct!")
+    score += 1
+else:
+    print("❌ Wrong! The correct answer is A) J.K. Rowling.")
+print()
+
+# Final Score
+print(f"🎯 Your final score is: {score} / 3")
+if score == 3:
+    print("🏆 Perfect score! You're a genius!")
+elif score == 2:
+    print("👏 Good job! Almost perfect.")
+else:
+    print("🙂 Keep practicing!")
